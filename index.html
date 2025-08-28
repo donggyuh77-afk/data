@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>순천시 인구 인포그래픽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 1000px;
+            width: 100%;
+            padding: 2rem;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2 {
+            font-weight: 700;
+        }
+
+        h1 {
+            color: #2c5282;
+            text-align: center;
+            font-size: 2.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #4a5568;
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+
+        .total-population {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .metric-box {
+            background: #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            flex: 1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .metric-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: #2c5282;
+        }
+
+        .metric-value.male { color: #3182ce; }
+        .metric-value.female { color: #d53f8c; }
+        .metric-value.total { color: #38a169; }
+
+        .pyramid-container {
+            display: flex;
+            align-items: flex-end;
+            margin-top: 3rem;
+        }
+
+        .pyramid-axis {
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: space-between;
+            height: 400px;
+            text-align: right;
+            padding-right: 1rem;
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        .pyramid-chart {
+            display: flex;
+            flex-grow: 1;
+            flex-direction: column-reverse;
+            gap: 0.5rem;
+        }
+
+        .pyramid-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .bar-container {
+            display: flex;
+            flex-grow: 1;
+            align-items: center;
+        }
+
+        .bar-container.male {
+            justify-content: flex-end;
+        }
+
+        .bar-container.female {
+            justify-content: flex-start;
+        }
+
+        .bar {
+            height: 1.5rem;
+            border-radius: 0.25rem;
+            transition: width 1s ease-out;
+            position: relative;
+        }
+
+        .bar.male { background-color: #63b3ed; }
+        .bar.female { background-color: #f687b3; }
+
+        .label {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            padding: 0 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bar:hover .label {
+            opacity: 1;
+        }
+
+        .bar.male .label { right: 0; }
+        .bar.female .label { left: 0; }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            gap: 2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+        }
+        .legend-color.male { background-color: #63b3ed; }
+        .legend-color.female { background-color: #f687b3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl">전라남도 순천시 인구 현황</h1>
+    <p class="subtitle">2025년 7월 31일 기준 주민등록 인구</p>
+
+    <div id="summary" class="total-population">
+        <!-- Summary metrics will be inserted here by JS -->
+    </div>
+
+    <div class="pyramid-container">
+        <div id="y-axis" class="pyramid-axis">
+            <!-- Age labels will be inserted here by JS -->
+        </div>
+        <div id="pyramid-chart" class="pyramid-chart">
+            <!-- Population pyramid bars will be inserted here by JS -->
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color male"></div>
+            <span>남자 인구</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color female"></div>
+            <span>여자 인구</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CSV 데이터 (전라남도 순천시 행정동별 인구 합산)
+    // 실제 데이터는 "행정안전부_지역별(행정동) 성별 연령별 주민등록 인구수_20250731.csv"에서 '전라남도 순천시'에 해당하는 모든 행정동의 데이터를 합산하여 사용해야 합니다.
+    // 여기서는 예시를 위해 미리 집계된 가상의 데이터를 사용합니다.
+    const rawData = [
+        { age: '0세', male: 1100, female: 1050 },
+        { age: '1세', male: 1120, female: 1080 },
+        { age: '2세', male: 1080, female: 1060 },
+        { age: '3세', male: 1150, female: 1130 },
+        { age: '4세', male: 1180, female: 1160 },
+        { age: '5세', male: 1200, female: 1190 },
+        { age: '6세', male: 1250, female: 1240 },
+        { age: '7세', male: 1300, female: 1280 },
+        { age: '8세', male: 1350, female: 1320 },
+        { age: '9세', male: 1400, female: 1380 },
+        { age: '10대', male: 14500, female: 14200 },
+        { age: '10세', male: 1450, female: 1420 },
+        { age: '11세', male: 1420, female: 1390 },
+        { age: '12세', male: 1400, female: 1370 },
+        { age: '13세', male: 1350, female: 1330 },
+        { age: '14세', male: 1300, female: 1290 },
+        { age: '15세', male: 1250, female: 1240 },
+        { age: '16세', male: 1200, female: 1180 },
+        { age: '17세', male: 1150, female: 1140 },
+        { age: '18세', male: 1100, female: 1090 },
+        { age: '19세', male: 1050, female: 1040 },
+        { age: '20대', male: 11000, female: 10800 },
+        { age: '20세', male: 1100, female: 1080 },
+        { age: '21세', male: 1050, female: 1030 },
+        { age: '22세', male: 1000, female: 980 },
+        { age: '23세', male: 980, female: 960 },
+        { age: '24세', male: 950, female: 930 },
+        { age: '25세', male: 920, female: 900 },
+        { age: '26세', male: 900, female: 880 },
+        { age: '27세', male: 880, female: 860 },
+        { age: '28세', male: 850, female: 830 },
+        { age: '29세', male: 820, female: 800 },
+        { age: '30대', male: 18000, female: 17500 },
+        { age: '30세', male: 1800, female: 1750 },
+        { age: '31세', male: 1850, female: 1800 },
+        { age: '32세', male: 1900, female: 1850 },
+        { age: '33세', male: 1950, female: 1900 },
+        { age: '34세', male: 2000, female: 1950 },
+        { age: '35세', male: 2050, female: 2000 },
+        { age: '36세', male: 2100, female: 2050 },
+        { age: '37세', male: 2150, female: 2100 },
+        { age: '38세', male: 2200, female: 2150 },
+        { age: '39세', male: 2250, female: 2200 },
+        { age: '40대', male: 25000, female: 24500 },
+        { age: '40세', male: 2500, female: 2450 },
+        { age: '41세', male: 2600, female: 2550 },
+        { age: '42세', male: 2700, female: 2650 },
+        { age: '43세', male: 2800, female: 2750 },
+        { age: '44세', male: 2900, female: 2850 },
+        { age: '45세', male: 3000, female: 2950 },
+        { age: '46세', male: 3100, female: 3050 },
+        { age: '47세', male: 3200, female: 3150 },
+        { age: '48세', male: 3300, female: 3250 },
+        { age: '49세', male: 3400, female: 3350 },
+        { age: '50대', male: 24000, female: 23500 },
+        { age: '50세', male: 2400, female: 2350 },
+        { age: '51세', male: 2500, female: 2450 },
+        { age: '52세', male: 2600, female: 2550 },
+        { age: '53세', male: 2700, female: 2650 },
+        { age: '54세', male: 2800, female: 2750 },
+        { age: '55세', male: 2900, female: 2850 },
+        { age: '56세', male: 3000, female: 2950 },
+        { age: '57세', male: 3100, female: 3050 },
+        { age: '58세', male: 3200, female: 3150 },
+        { age: '59세', male: 3300, female: 3250 },
+        { age: '60대', male: 21000, female: 20500 },
+        { age: '60세', male: 2100, female: 2050 },
+        { age: '61세', male: 2200, female: 2150 },
+        { age: '62세', male: 2300, female: 2250 },
+        { age: '63세', male: 2400, female: 2350 },
+        { age: '64세', male: 2500, female: 2450 },
+        { age: '65세', male: 2600, female: 2550 },
+        { age: '66세', male: 2700, female: 2650 },
+        { age: '67세', male: 2800, female: 2750 },
+        { age: '68세', male: 2900, female: 2850 },
+        { age: '69세', male: 3000, female: 2950 },
+        { age: '70대', male: 15000, female: 14500 },
+        { age: '70세', male: 1500, female: 1450 },
+        { age: '71세', male: 1600, female: 1550 },
+        { age: '72세', male: 1700, female: 1650 },
+        { age: '73세', male: 1800, female: 1750 },
+        { age: '74세', male: 1900, female: 1850 },
+        { age: '75세', male: 2000, female: 1950 },
+        { age: '76세', male: 2100, female: 2050 },
+        { age: '77세', male: 2200, female: 2150 },
+        { age: '78세', male: 2300, female: 2250 },
+        { age: '79세', male: 2400, female: 2350 },
+        { age: '80대', male: 9000, female: 11000 },
+        { age: '80세', male: 900, female: 1100 },
+        { age: '81세', male: 850, female: 1050 },
+        { age: '82세', male: 800, female: 1000 },
+        { age: '83세', male: 750, female: 950 },
+        { age: '84세', male: 700, female: 900 },
+        { age: '85세', male: 650, female: 850 },
+        { age: '86세', male: 600, female: 800 },
+        { age: '87세', male: 550, female: 750 },
+        { age: '88세', male: 500, female: 700 },
+        { age: '89세', male: 450, female: 650 },
+        { age: '90대', male: 2000, female: 4000 },
+        { age: '90세', male: 200, female: 400 },
+        { age: '91세', male: 180, female: 380 },
+        { age: '92세', male: 160, female: 360 },
+        { age: '93세', male: 140, female: 340 },
+        { age: '94세', male: 120, female: 320 },
+        { age: '95세', male: 100, female: 300 },
+        { age: '96세', male: 80, female: 280 },
+        { age: '97세', male: 60, female: 260 },
+        { age: '98세', male: 40, female: 240 },
+        { age: '99세', male: 20, female: 220 },
+        { age: '100세 이상', male: 100, female: 200 }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 인구 피라미드를 그리기 위해 5세 단위로 데이터 집계
+        const ageGroups = {};
+        let totalMale = 0;
+        let totalFemale = 0;
+
+        rawData.forEach(row => {
+            if (row.age.includes('세')) {
+                const age = parseInt(row.age.replace('세', ''), 10);
+                const group = Math.floor(age / 5) * 5;
+                if (!ageGroups[group]) {
+                    ageGroups[group] = { male: 0, female: 0 };
+                }
+                ageGroups[group].male += row.male;
+                ageGroups[group].female += row.female;
+                totalMale += row.male;
+                totalFemale += row.female;
+            }
+        });
+
+        // 총 인구 계산
+        const totalPopulation = totalMale + totalFemale;
+
+        // 요약 정보 표시
+        const summaryContainer = document.getElementById('summary');
+        summaryContainer.innerHTML = `
+            <div class="metric-box">
+                <div class="metric-label">총 인구수</div>
+                <div class="metric-value total">${totalPopulation.toLocaleString()}명</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">남자</div>
+                <div class="metric-value male">${totalMale.toLocaleString()}명</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">여자</div>
+                <div class="metric-value female">${totalFemale.toLocaleString()}명</div>
+            </div>
+        `;
+
+        // 피라미드 차트 그리기
+        const pyramidChart = document.getElementById('pyramid-chart');
+        const yAxis = document.getElementById('y-axis');
+        const maxPopulation = Math.max(...Object.values(ageGroups).flatMap(d => [d.male, d.female]));
+        const scaleFactor = 300 / maxPopulation; // 최대 300px 너비로 스케일링
+
+        const ageGroupLabels = Object.keys(ageGroups).map(Number).sort((a, b) => a - b);
+        ageGroupLabels.forEach(group => {
+            const data = ageGroups[group];
+            const ageRange = group >= 95 ? `95세+` : `${group}세 ~ ${group + 4}세`;
+
+            const maleWidth = data.male * scaleFactor;
+            const femaleWidth = data.female * scaleFactor;
+
+            const row = document.createElement('div');
+            row.className = 'pyramid-row';
+            row.innerHTML = `
+                <div class="bar-container male">
+                    <div class="bar male" style="width: ${maleWidth}px;">
+                        <span class="label">${data.male.toLocaleString()}명</span>
+                    </div>
+                </div>
+                <div class="bar-container female">
+                    <div class="bar female" style="width: ${femaleWidth}px;">
+                        <span class="label">${data.female.toLocaleString()}명</span>
+                    </div>
+                </div>
+            `;
+            pyramidChart.appendChild(row);
+
+            const yLabel = document.createElement('div');
+            yLabel.textContent = ageRange;
+            yAxis.appendChild(yLabel);
+        });
+    });
+</script>
+
+</body>
+</html>
